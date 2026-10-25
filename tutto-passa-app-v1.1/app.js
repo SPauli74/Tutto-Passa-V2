@@ -27,23 +27,29 @@ async function fetchOpenLigaDB() {
   try {
     let res = await fetch('https://api.openligadb.de/getmatchdata/bl2/2026')
     let data = await res.json()
+    
     let fcnMatches = data.filter(m => 
       m.team1.teamName.toLowerCase().includes('nürnberg') || 
       m.team2.teamName.toLowerCase().includes('nürnberg')
     )
+
     if (fcnMatches.length > 0) {
       liveMatches = fcnMatches.map(m => {
         let isHome = m.team1.teamName.toLowerCase().includes('nürnberg')
         let opponent = isHome ? m.team2.teamName : m.team1.teamName
         let d = new Date(m.matchDateTime)
-        return [
-          d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }),
-          d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
-          isHome ? 'H' : 'A',
-          opponent,
-          '2. Bundesliga'
-        ]
-      })
+        return {
+          rawDate: d,
+          dateStr: d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }),
+          timeStr: d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+          type: isHome ? 'H' : 'A',
+          typeText: isHome ? 'Heimspiel' : 'Auswärts',
+          opponent: opponent,
+          league: '2. Bundesliga',
+          location: isHome ? 'Max-Morlock-Stadion' : 'Gästeblock'
+        }
+      }).sort((a, b) => a.rawDate - b.rawDate)
+      
       render()
     }
   } catch (e) {
@@ -130,18 +136,32 @@ function register() {
   </div>`
 }
 
+function getNextMatch() {
+  let now = new Date()
+  let upcoming = liveMatches.find(m => m.rawDate >= now)
+  if (!upcoming && liveMatches.length > 0) upcoming = liveMatches[liveMatches.length - 1]
+  return upcoming || {
+    dateStr: '08.11.',
+    timeStr: '13:00',
+    type: 'A',
+    typeText: 'Auswärts',
+    opponent: 'SC Paderborn 07',
+    league: '2. Bundesliga',
+    location: 'Home Deluxe Arena'
+  }
+}
+
 function tripCard() {
-  let nextOpponent = liveMatches.length > 0 ? liveMatches[0][3] : "Nächstes Auswärtsspiel"
-  let nextDate = liveMatches.length > 0 ? `${liveMatches[0][0]}. · ${liveMatches[0][1]} Uhr` : "Termin ausstehend"
+  let next = getNextMatch()
   return `<div class="card hero-card">
     <div class="row">
       <div>
-        <div class="muted small">2. Bundesliga · Auswärts</div>
-        <div class="opponent">${nextOpponent}</div>
+        <div class="muted small">${next.league} · ${next.typeText}</div>
+        <div class="opponent">1. FCN vs. ${next.opponent}</div>
       </div>
       <span class="badge">FAHRT OFFEN</span>
     </div>
-    <p><b>${nextDate}</b></p>
+    <p><b>📅 ${next.dateStr} · ${next.timeStr} Uhr</b><br><span class="muted">📍 ${next.location}</span></p>
     <button class="primary full" id="joinBtn">${state.joined ? '✓ Du fährst mit' : 'Ich fahre mit!'}</button>
   </div>`
 }
@@ -155,7 +175,7 @@ function home() {
     <main>
       <div class="grid dashboard">
         <div>
-          <div class="section-title"><h2>Nächste Auswärtsfahrt</h2><span class="badge">2. Bundesliga</span></div>
+          <div class="section-title"><h2>Nächstes Spiel</h2><span class="badge">Live Sync</span></div>
           ${tripCard()}
           <div class="tiles">
             <button class="tile" data-go="participants"><b>👥 Teilnehmer</b><span>Status einsehen</span></button>
@@ -170,22 +190,22 @@ function home() {
 
 function gamesView() {
   let gamesList = liveMatches.length > 0 ? liveMatches : [
-    ['24.10.', '20:30', 'H', '1. FC Kaiserslautern', '2. Bundesliga'],
-    ['01.11.', '13:30', 'A', 'FC St. Pauli', '2. Bundesliga']
+    { dateStr: '08.11.', timeStr: '13:00', type: 'A', opponent: 'SC Paderborn 07', league: '2. Bundesliga' },
+    { dateStr: '22.11.', timeStr: '20:30', type: 'A', opponent: '1. FC Magdeburg', league: '2. Bundesliga' }
   ]
 
   return shell(`
     <section class="hero">
       <h1>Spiele</h1>
-      <p class="muted">Live synchronisiert via OpenLigaDB</p>
+      <p class="muted">Kompletter Spielplan via OpenLigaDB</p>
     </section>
     <main>
       <div class="list">
         ${gamesList.map(g => `
           <div class="listitem">
-            <div class="game-date"><b>${g[0]}</b><div class="small">${g[1]}</div></div>
-            <div class="crest">${g[2]}</div>
-            <div style="flex:1;text-align:left"><b>${g[3]}</b><div class="muted small">${g[4]}</div></div>
+            <div class="game-date"><b>${g.dateStr}</b><div class="small">${g.timeStr}</div></div>
+            <div class="crest">${g.type}</div>
+            <div style="flex:1;text-align:left"><b>1. FC Nürnberg vs. ${g.opponent}</b><div class="muted small">${g.league}</div></div>
           </div>
         `).join('')}
       </div>
