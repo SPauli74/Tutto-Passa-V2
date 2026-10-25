@@ -1,7 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
 const supabaseUrl = 'https://glswlnfbewcqerobseyy.supabase.co'
-const supabaseAnonKey = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdsc3dsbmZiZXdjcWVyb2JzZXl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NjU2NjcsImV4cCI6MjEwODI0MTY2N30.WJM3jRSbUxTAN2fAu8HDU-PZ4p32pbpOF64f-qDNe3c
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdsc3dsbmZiZXdjcWVyb2JzZXl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NjU2NjcsImV4cCI6MjEwODI0MTY2N30.WJM3jRSbUxTAN2fAu8HDU-PZ4p32pbpOF64f-qDNe3c'
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 const $ = s => document.querySelector(s)
