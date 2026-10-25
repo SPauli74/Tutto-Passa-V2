@@ -1,7 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-const supabaseUrl = https://glswlnfbewcqerobseyy.supabase.co/rest/v1/
-const supabaseAnonKey =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdsc3dsbmZiZXdjcWVyb2JzZXl5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjY2NTY2NywiZXhwIjoyMTA4MjQxNjY3fQ._3lp411w1bTpAuBm3VKd5E4QVHfh5uhJ-4iitXivmhc 'DEIN_SUPABASE_ANON_KEY'
+const supabaseUrl = 'https://glswlnfbewcqerobseyy.supabase.co'
+const supabaseAnonKey = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdsc3dsbmZiZXdjcWVyb2JzZXl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NjU2NjcsImV4cCI6MjEwODI0MTY2N30.WJM3jRSbUxTAN2fAu8HDU-PZ4p32pbpOF64f-qDNe3c
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 const $ = s => document.querySelector(s)
