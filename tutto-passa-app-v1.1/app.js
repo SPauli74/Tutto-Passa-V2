@@ -12,6 +12,7 @@ const seed = {
   loggedIn: false,
   joined: true,
   tripTab: 'overview',
+  selectedMatchIndex: 0,
   tasks: [],
   messages: [],
   changeRequests: []
@@ -136,11 +137,14 @@ function register() {
   </div>`
 }
 
-function getNextMatch() {
+function getCurrentMatch() {
+  if (liveMatches.length > 0 && liveMatches[state.selectedMatchIndex]) {
+    return liveMatches[state.selectedMatchIndex]
+  }
   let now = new Date()
   let upcoming = liveMatches.find(m => m.rawDate >= now)
-  if (!upcoming && liveMatches.length > 0) upcoming = liveMatches[liveMatches.length - 1]
-  return upcoming || {
+  if (upcoming) return upcoming
+  return liveMatches[0] || {
     dateStr: '08.11.',
     timeStr: '13:00',
     type: 'A',
@@ -152,7 +156,7 @@ function getNextMatch() {
 }
 
 function tripCard() {
-  let next = getNextMatch()
+  let next = getCurrentMatch()
   return `<div class="card hero-card">
     <div class="row">
       <div>
@@ -175,10 +179,10 @@ function home() {
     <main>
       <div class="grid dashboard">
         <div>
-          <div class="section-title"><h2>Nächstes Spiel</h2><span class="badge">Live Sync</span></div>
+          <div class="section-title"><h2>Aktuelles Spiel</h2><span class="badge">Live Sync</span></div>
           ${tripCard()}
           <div class="tiles">
-            <button class="tile" data-go="participants"><b>👥 Teilnehmer</b><span>Status einsehen</span></button>
+            <button class="tile" data-go="trip"><b>🚐 Fahrtplanung</b><span>Details & Routen</span></button>
             <button class="tile" data-go="tasks"><b>📋 Aufgaben</b><span>${state.tasks.filter(t => !t.done).length} offen</span></button>
             <button class="tile" data-go="chat"><b>💬 Chat</b><span>${state.messages.length} Nachrichten</span></button>
           </div>
@@ -197,16 +201,19 @@ function gamesView() {
   return shell(`
     <section class="hero">
       <h1>Spiele</h1>
-      <p class="muted">Kompletter Spielplan via OpenLigaDB</p>
+      <p class="muted">Wähle ein Spiel aus, um die Fahrt zu planen</p>
     </section>
     <main>
       <div class="list">
-        ${gamesList.map(g => `
-          <div class="listitem">
-            <div class="game-date"><b>${g.dateStr}</b><div class="small">${g.timeStr}</div></div>
-            <div class="crest">${g.type}</div>
-            <div style="flex:1;text-align:left"><b>1. FC Nürnberg vs. ${g.opponent}</b><div class="muted small">${g.league}</div></div>
-          </div>
+        ${gamesList.map((g, idx) => `
+          <button class="listitem" data-select-match="${idx}" style="width:100%;text-align:left;background:transparent;border:0;padding:0;">
+            <div class="listitem" style="width:100%">
+              <div class="game-date"><b>${g.dateStr}</b><div class="small">${g.timeStr}</div></div>
+              <div class="crest">${g.type}</div>
+              <div style="flex:1;text-align:left"><b>1. FC Nürnberg vs. ${g.opponent}</b><div class="muted small">${g.league}</div></div>
+              <span>›</span>
+            </div>
+          </button>
         `).join('')}
       </div>
     </main>
@@ -214,10 +221,12 @@ function gamesView() {
 }
 
 function trip() {
+  let next = getCurrentMatch()
   return shell(`
     <section class="hero">
       <div class="eyebrow">Spieltag</div>
-      <h1>Fahrtplanung</h1>
+      <h1>1. FCN vs. ${next.opponent}</h1>
+      <p class="muted">${next.dateStr} · ${next.timeStr} Uhr · ${next.location}</p>
     </section>
     <main>${tripCard()}</main>
   `)
@@ -262,7 +271,7 @@ function render() {
     save()
     route = 'login'
   }
-  const appEl = $('#app')
+  let appEl = $('#app')
   if (appEl) {
     appEl.innerHTML = (routes[route] || home)()
   }
@@ -270,10 +279,18 @@ function render() {
   $$('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go))
   $$('.bottomnav button').forEach(b => b.classList.toggle('active', b.dataset.go === route))
 
-  const l = $('#loginForm')
+  $$('[data-select-match]').forEach(b => {
+    b.onclick = () => {
+      state.selectedMatchIndex = parseInt(b.dataset.selectMatch)
+      save()
+      go('trip')
+    }
+  })
+
+  let l = $('#loginForm')
   if (l) l.onsubmit = e => { e.preventDefault(); state.loggedIn = true; save(); go('home') }
 
-  const j = $('#joinBtn')
+  let j = $('#joinBtn')
   if (j) j.onclick = () => {
     state.joined = !state.joined
     save()
@@ -281,10 +298,10 @@ function render() {
     render()
   }
 
-  const cf = $('#chatForm')
+  let cf = $('#chatForm')
   if (cf) cf.onsubmit = e => {
     e.preventDefault()
-    const i = $('#chatText')
+    let i = $('#chatTest') || $('#chatText')
     if (i && i.value.trim()) {
       state.messages.push({
         name: 'Stefan',
