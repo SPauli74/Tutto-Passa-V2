@@ -1,0 +1,17 @@
+{
+  "name": "Tutto Passa Auswärtsfahrten",
+  "short_name": "Tutto Passa",
+  "start_url": "./#login",
+  "display": "standalone",
+  "background_color": "#08090a",
+  "theme_color": "#771622",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "assets/logo-modern.png",
+      "sizes": "1258x1250",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
